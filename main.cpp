@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <ranges>
+#include <thread>
 
 int main() {
 	using namespace std::chrono_literals;
