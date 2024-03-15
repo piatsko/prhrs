@@ -52,15 +52,17 @@ namespace prhrs {
 	};
 
 
-	template <std::ranges::forward_range Range, Writeable Stream=std::ostream>
+	template <
+		std::ranges::forward_range Range,
+		typename IteratorT=std::ranges::iterator_t<Range>,
+		typename SentinelT=std::ranges::sentinel_t<Range>,
+		Writeable Stream=std::ostream>
 	class Prhrs {
 		private:
 			using value_t = std::ranges::range_value_t<Range>;
-			using iterator_t = std::ranges::iterator_t<Range>;
-			using sentinel_t = std::ranges::sentinel_t<Range>;
 			
-			iterator_t it_;
-			sentinel_t end_;
+			IteratorT it_;
+			SentinelT end_;
 			PrhrsLogger<Stream> logger_;
 
 		public:
@@ -73,7 +75,7 @@ namespace prhrs {
 			Prhrs(const Range& range, Stream& stream)
 				: it_(std::ranges::cbegin(range)), end_(std::ranges::cend(range)), logger_(std::ranges::size(range), stream) { }
 
-			bool operator== (const sentinel_t& sentinel) const {
+			bool operator== (const SentinelT& sentinel) const {
 				return it_ == sentinel;
 			}
 
@@ -83,7 +85,7 @@ namespace prhrs {
 			const Prhrs& begin() const {
 				return *this;
 			}
-			const sentinel_t end() const {
+			const SentinelT end() const {
 				return end_;
 			}
 			Prhrs& operator++() {
@@ -110,11 +112,11 @@ namespace prhrs {
 
 	template <std::ranges::forward_range Range>
 	auto prhrs(Range& range) {
-		return Prhrs<Range>(range);
+		return Prhrs(range);
 	}
 	template <std::ranges::forward_range Range>
 	auto prhrs(const Range& range) {
-		return Prhrs<Range>(range);
+		return Prhrs<Range, std::ranges::const_iterator_t<const Range>, std::ranges::const_sentinel_t<const Range>>(range);
 	}
 
 	template <std::ranges::forward_range Range, Writeable Stream>
@@ -123,7 +125,7 @@ namespace prhrs {
 	}
 	template <std::ranges::forward_range Range, Writeable Stream>
 	auto prhrs(const Range& range, Stream& stream) {
-		return Prhrs(range, stream);
+		return Prhrs<Range, std::ranges::const_iterator_t<const Range>, std::ranges::const_sentinel_t<const Range>>(range, stream);
 	}
 
 	auto prange(std::size_t n) {
